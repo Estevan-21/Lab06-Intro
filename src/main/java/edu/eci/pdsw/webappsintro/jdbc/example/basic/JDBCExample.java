@@ -34,10 +34,10 @@ public class JDBCExample {
     
     public static void main(String args[]){
         try {
-            String url="jdbc:mysql://HOST:3306/BD";
+            String url="jdbc:mysql://desarrollo.is.escuelaing.edu.co:3306/bdprueba";
             String driver="com.mysql.jdbc.Driver";
-            String user="USER";
-            String pwd="PWD";
+            String user="bdprueba";
+            String pwd="bdprueba";
                         
             Class.forName(driver);
             Connection con=DriverManager.getConnection(url,user,pwd);
@@ -46,7 +46,10 @@ public class JDBCExample {
             
             System.out.println("Valor total pedido 1:"+valorTotalPedido(con, 1));
             
+            
+            //registrarNuevoProducto(con, 2109950, "Brayam Estevan Vargas",123456); 
             List<String> prodsPedido=nombresProductosPedido(con, 1);
+              
             
             
             System.out.println("Productos del pedido 1:");
@@ -57,8 +60,8 @@ public class JDBCExample {
             System.out.println("-----------------------");
             
             
-            int suCodigoECI=20134423;
-            registrarNuevoProducto(con, suCodigoECI, "SU NOMBRE", 99999999);            
+            
+                     
             con.commit();
                         
             
@@ -83,7 +86,14 @@ public class JDBCExample {
         //Crear preparedStatement
         //Asignar parámetros
         //usar 'execute'
-
+        
+        String insercion = "INSERT INTO ORD_PRODUCTOS(codigo , nombre, precio) values ( ? , ? , ? )";
+        PreparedStatement pstmt;
+        pstmt = con.prepareStatement(insercion);        
+        pstmt.setInt(1 , codigo);
+        pstmt.setString(2 , nombre);
+        pstmt.setInt(3 , precio); 
+        pstmt.executeUpdate();
         
         con.commit();
         
@@ -95,14 +105,25 @@ public class JDBCExample {
      * @param codigoPedido el código del pedido
      * @return 
      */
-    public static List<String> nombresProductosPedido(Connection con, int codigoPedido){
-        List<String> np=new LinkedList<>();
-        
+    public static List<String> nombresProductosPedido(Connection con, int codigoPedido) throws SQLException{
         //Crear prepared statement
         //asignar parámetros
         //usar executeQuery
         //Sacar resultados del ResultSet
         //Llenar la lista y retornarla
+        String consulta= "SELECT nombre FROM ORD_PRODUCTOS ";
+        List<String> np=new LinkedList<>();        
+        
+        PreparedStatement pstmt = con.prepareStatement(consulta);        
+        ResultSet resultado = pstmt.executeQuery();
+        while (resultado.next ()) {            
+            np.add(resultado.getString(1));
+        }
+        //np=resultado.getString(1);        
+        //res=resultado.getInt(1);
+        //System.out.println(res);
+        resultado.close();
+        pstmt.close();
         
         return np;
     }
@@ -114,14 +135,18 @@ public class JDBCExample {
      * @param codigoPedido código del pedido cuyo total se calculará
      * @return el costo total del pedido (suma de: cantidades*precios)
      */
-    public static int valorTotalPedido(Connection con, int codigoPedido){
-        
+    public static int valorTotalPedido(Connection con, int codigoPedido) throws SQLException{        
         //Crear prepared statement
         //asignar parámetros
         //usar executeQuery
         //Sacar resultado del ResultSet
-        
-        return 0;
+        int total=0;
+        String consulta= "SELECT SUM(precio) FROM ORD_PRODUCTOS ";
+        PreparedStatement pstmt = con.prepareStatement(consulta);        
+        ResultSet resultado = pstmt.executeQuery();
+        while (resultado.next ()) {
+            total=resultado.getInt(1);}
+        return total;
     }
     
 
